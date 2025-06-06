@@ -51,15 +51,14 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
     return shape;
   }, []);
 
-  // Calculate gutter positions - positioned prominently at roof edge
-  const gutterOffset = 0.3; // Further from building for visibility
-  const gutterHeight = height + 0.2; // Higher position
+  // Position gutters RIGHT AT the roof edge where they belong
+  const gutterHeight = height - 0.1; // Just below roof edge
 
   return (
     <group>
-      {/* FRONT GUTTER - running along width */}
+      {/* FRONT GUTTER - positioned at the front edge of the roof */}
       <mesh
-        position={[0, gutterHeight, length/2 + gutterOffset]}
+        position={[0, gutterHeight, length/2]}
         rotation={[0, 0, 0]}
         castShadow
         receiveShadow
@@ -80,9 +79,9 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* BACK GUTTER - running along width */}
+      {/* BACK GUTTER - positioned at the back edge of the roof */}
       <mesh
-        position={[0, gutterHeight, -length/2 - gutterOffset]}
+        position={[0, gutterHeight, -length/2]}
         rotation={[0, 0, 0]}
         castShadow
         receiveShadow
@@ -103,9 +102,9 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* LEFT GUTTER - running along length */}
+      {/* LEFT GUTTER - positioned at the left edge of the roof */}
       <mesh
-        position={[-width/2 - gutterOffset, gutterHeight, 0]}
+        position={[-width/2, gutterHeight, 0]}
         rotation={[0, Math.PI/2, 0]}
         castShadow
         receiveShadow
@@ -126,9 +125,9 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* RIGHT GUTTER - running along length */}
+      {/* RIGHT GUTTER - positioned at the right edge of the roof */}
       <mesh
-        position={[width/2 + gutterOffset, gutterHeight, 0]}
+        position={[width/2, gutterHeight, 0]}
         rotation={[0, Math.PI/2, 0]}
         castShadow
         receiveShadow
@@ -149,16 +148,16 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* ONLY 4 CORNER DOWNSPOUTS - no front/back wall downspouts */}
+      {/* ONLY 4 CORNER DOWNSPOUTS - positioned at building corners */}
       {[
         // Front left corner
-        [-width/2 - gutterOffset, (height - 1)/2 + 0.5, length/2 + gutterOffset],
+        [-width/2, (height - 1)/2 + 0.5, length/2],
         // Front right corner  
-        [width/2 + gutterOffset, (height - 1)/2 + 0.5, length/2 + gutterOffset],
+        [width/2, (height - 1)/2 + 0.5, length/2],
         // Back left corner
-        [-width/2 - gutterOffset, (height - 1)/2 + 0.5, -length/2 - gutterOffset],
+        [-width/2, (height - 1)/2 + 0.5, -length/2],
         // Back right corner
-        [width/2 + gutterOffset, (height - 1)/2 + 0.5, -length/2 - gutterOffset],
+        [width/2, (height - 1)/2 + 0.5, -length/2],
       ].map((position, index) => (
         <mesh
           key={`downspout-${index}`}
@@ -173,10 +172,10 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
 
       {/* Corner downspout elbows connecting gutters to downspouts */}
       {[
-        [-width/2 - gutterOffset, gutterHeight - 0.3, length/2 + gutterOffset],
-        [width/2 + gutterOffset, gutterHeight - 0.3, length/2 + gutterOffset],
-        [-width/2 - gutterOffset, gutterHeight - 0.3, -length/2 - gutterOffset],
-        [width/2 + gutterOffset, gutterHeight - 0.3, -length/2 - gutterOffset],
+        [-width/2, gutterHeight - 0.3, length/2],
+        [width/2, gutterHeight - 0.3, length/2],
+        [-width/2, gutterHeight - 0.3, -length/2],
+        [width/2, gutterHeight - 0.3, -length/2],
       ].map((position, index) => (
         <mesh
           key={`elbow-${index}`}
@@ -190,7 +189,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         </mesh>
       ))}
 
-      {/* Gutter mounting brackets - more prominent */}
+      {/* Gutter mounting brackets - positioned on the building walls */}
       {(() => {
         const brackets = [];
         const bracketSpacing = 8;
@@ -202,7 +201,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
             brackets.push(
               <mesh 
                 key={`bracket-front-${i}`}
-                position={[x, gutterHeight + 0.2, length/2 + gutterOffset - 0.1]}
+                position={[x, gutterHeight + 0.2, length/2 - 0.1]}
                 castShadow
                 receiveShadow
               >
@@ -220,7 +219,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
             brackets.push(
               <mesh 
                 key={`bracket-back-${i}`}
-                position={[x, gutterHeight + 0.2, -length/2 - gutterOffset + 0.1]}
+                position={[x, gutterHeight + 0.2, -length/2 + 0.1]}
                 castShadow
                 receiveShadow
               >
@@ -238,7 +237,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
             brackets.push(
               <mesh 
                 key={`bracket-left-${i}`}
-                position={[-width/2 - gutterOffset + 0.1, gutterHeight + 0.2, z]}
+                position={[-width/2 + 0.1, gutterHeight + 0.2, z]}
                 castShadow
                 receiveShadow
               >
@@ -256,7 +255,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
             brackets.push(
               <mesh 
                 key={`bracket-right-${i}`}
-                position={[width/2 + gutterOffset - 0.1, gutterHeight + 0.2, z]}
+                position={[width/2 - 0.1, gutterHeight + 0.2, z]}
                 castShadow
                 receiveShadow
               >
@@ -272,14 +271,14 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
 
       {/* Downspout mounting straps - only at corners */}
       {[
-        [-width/2 - gutterOffset, height * 0.75, length/2 + gutterOffset],
-        [width/2 + gutterOffset, height * 0.75, length/2 + gutterOffset],
-        [-width/2 - gutterOffset, height * 0.75, -length/2 - gutterOffset],
-        [width/2 + gutterOffset, height * 0.75, -length/2 - gutterOffset],
-        [-width/2 - gutterOffset, height * 0.25, length/2 + gutterOffset],
-        [width/2 + gutterOffset, height * 0.25, length/2 + gutterOffset],
-        [-width/2 - gutterOffset, height * 0.25, -length/2 - gutterOffset],
-        [width/2 + gutterOffset, height * 0.25, -length/2 - gutterOffset],
+        [-width/2, height * 0.75, length/2],
+        [width/2, height * 0.75, length/2],
+        [-width/2, height * 0.75, -length/2],
+        [width/2, height * 0.75, -length/2],
+        [-width/2, height * 0.25, length/2],
+        [width/2, height * 0.25, length/2],
+        [-width/2, height * 0.25, -length/2],
+        [width/2, height * 0.25, -length/2],
       ].map((position, index) => (
         <mesh
           key={`strap-${index}`}
@@ -294,10 +293,10 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
 
       {/* Splash blocks at ground level - only at corners */}
       {[
-        [-width/2 - gutterOffset, 0.15, length/2 + gutterOffset + 1.5],
-        [width/2 + gutterOffset, 0.15, length/2 + gutterOffset + 1.5],
-        [-width/2 - gutterOffset, 0.15, -length/2 - gutterOffset - 1.5],
-        [width/2 + gutterOffset, 0.15, -length/2 - gutterOffset - 1.5],
+        [-width/2, 0.15, length/2 + 1.5],
+        [width/2, 0.15, length/2 + 1.5],
+        [-width/2, 0.15, -length/2 - 1.5],
+        [width/2, 0.15, -length/2 - 1.5],
       ].map((position, index) => (
         <mesh
           key={`splash-${index}`}
