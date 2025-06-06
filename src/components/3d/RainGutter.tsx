@@ -11,168 +11,153 @@ interface RainGutterProps {
 const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitch }) => {
   const roofHeight = (width / 2) * (roofPitch / 12);
   
-  // Enhanced gutter material for better visibility
+  // Enhanced gutter material for maximum visibility
   const gutterMaterial = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: '#C0C0C0',
-      metalness: 0.9,
-      roughness: 0.1,
-      envMapIntensity: 1.2,
+      color: '#E8E8E8', // Brighter silver
+      metalness: 0.95,
+      roughness: 0.05,
+      envMapIntensity: 1.5,
     });
   }, []);
 
   // Downspout material
   const downspoutMaterial = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: '#A0A0A0',
-      metalness: 0.8,
-      roughness: 0.2,
-      envMapIntensity: 1.0,
+      color: '#D0D0D0',
+      metalness: 0.9,
+      roughness: 0.1,
+      envMapIntensity: 1.2,
     });
   }, []);
 
-  // Create more prominent gutter profile
+  // Create highly visible gutter profile - much larger
   const gutterShape = useMemo(() => {
     const shape = new THREE.Shape();
-    const gutterWidth = 0.6; // Increased width for better visibility
-    const gutterDepth = 0.4; // Increased depth
+    const gutterWidth = 1.0; // Much larger for visibility
+    const gutterDepth = 0.6; // Much deeper
     
-    // Create U-shaped gutter profile with thicker walls
+    // Create prominent U-shaped gutter profile
     shape.moveTo(-gutterWidth/2, 0);
     shape.lineTo(-gutterWidth/2, -gutterDepth * 0.8);
     shape.quadraticCurveTo(0, -gutterDepth, gutterWidth/2, -gutterDepth * 0.8);
     shape.lineTo(gutterWidth/2, 0);
-    shape.lineTo(gutterWidth/2 - 0.08, 0); // Thicker walls
-    shape.lineTo(gutterWidth/2 - 0.08, -gutterDepth * 0.7);
-    shape.quadraticCurveTo(0, -gutterDepth * 0.85, -gutterWidth/2 + 0.08, -gutterDepth * 0.7);
-    shape.lineTo(-gutterWidth/2 + 0.08, 0);
+    shape.lineTo(gutterWidth/2 - 0.12, 0); // Thick walls
+    shape.lineTo(gutterWidth/2 - 0.12, -gutterDepth * 0.7);
+    shape.quadraticCurveTo(0, -gutterDepth * 0.85, -gutterWidth/2 + 0.12, -gutterDepth * 0.7);
+    shape.lineTo(-gutterWidth/2 + 0.12, 0);
     shape.closePath();
     
     return shape;
   }, []);
 
-  // Create gutter geometry
-  const gutterGeometry = useMemo(() => {
-    const extrudeSettings = {
-      steps: 2,
-      depth: length,
-      bevelEnabled: true,
-      bevelThickness: 0.02,
-      bevelSize: 0.02,
-      bevelSegments: 3,
-    };
-    return new THREE.ExtrudeGeometry(gutterShape, extrudeSettings);
-  }, [gutterShape, length]);
-
-  // Enhanced downspout geometry
-  const downspoutGeometry = useMemo(() => {
-    return new THREE.CylinderGeometry(0.12, 0.12, height - 1, 12); // Larger and more detailed
-  }, [height]);
-
-  // Enhanced bracket geometry
-  const bracketGeometry = useMemo(() => {
-    return new THREE.BoxGeometry(0.15, 0.4, 0.2);
-  }, []);
-
-  // Calculate gutter positions - positioned right at roof edge
-  const gutterOffset = 0.1; // Closer to the building
-  const gutterHeight = height + 0.05; // Just below roof edge
-
-  // Create more visible brackets
-  const createBrackets = (side: 'left' | 'right') => {
-    const brackets = [];
-    const bracketSpacing = 6; // More frequent brackets
-    const numBrackets = Math.ceil(length / bracketSpacing);
-    const actualSpacing = length / Math.max(numBrackets - 1, 1);
-    
-    for (let i = 0; i < numBrackets; i++) {
-      const z = -length/2 + i * actualSpacing;
-      const x = side === 'left' ? -width/2 - gutterOffset : width/2 + gutterOffset;
-      
-      brackets.push(
-        <mesh 
-          key={`bracket-${side}-${i}`}
-          position={[x, gutterHeight + 0.15, z]}
-          castShadow
-          receiveShadow
-        >
-          <primitive object={bracketGeometry} />
-          <primitive object={gutterMaterial} attach="material" />
-        </mesh>
-      );
-    }
-    
-    return brackets;
-  };
-
-  // Create front and back gutters as well
-  const frontBackGutterGeometry = useMemo(() => {
-    const extrudeSettings = {
-      steps: 2,
-      depth: width,
-      bevelEnabled: true,
-      bevelThickness: 0.02,
-      bevelSize: 0.02,
-      bevelSegments: 3,
-    };
-    return new THREE.ExtrudeGeometry(gutterShape, extrudeSettings);
-  }, [gutterShape, width]);
+  // Calculate gutter positions - positioned prominently at roof edge
+  const gutterOffset = 0.3; // Further from building for visibility
+  const gutterHeight = height + 0.2; // Higher position
 
   return (
     <group>
-      {/* Left side gutter - running along length */}
+      {/* FRONT GUTTER - running along width */}
       <mesh
-        position={[-width/2 - gutterOffset, gutterHeight - 0.2, 0]}
-        rotation={[Math.PI/2, 0, 0]}
+        position={[0, gutterHeight, length/2 + gutterOffset]}
+        rotation={[0, 0, 0]}
         castShadow
         receiveShadow
       >
-        <primitive object={gutterGeometry} />
+        <extrudeGeometry 
+          args={[
+            gutterShape, 
+            {
+              steps: 2,
+              depth: width,
+              bevelEnabled: true,
+              bevelThickness: 0.03,
+              bevelSize: 0.03,
+              bevelSegments: 4,
+            }
+          ]} 
+        />
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* Right side gutter - running along length */}
+      {/* BACK GUTTER - running along width */}
       <mesh
-        position={[width/2 + gutterOffset, gutterHeight - 0.2, 0]}
-        rotation={[Math.PI/2, 0, 0]}
+        position={[0, gutterHeight, -length/2 - gutterOffset]}
+        rotation={[0, 0, 0]}
         castShadow
         receiveShadow
       >
-        <primitive object={gutterGeometry} />
+        <extrudeGeometry 
+          args={[
+            gutterShape, 
+            {
+              steps: 2,
+              depth: width,
+              bevelEnabled: true,
+              bevelThickness: 0.03,
+              bevelSize: 0.03,
+              bevelSegments: 4,
+            }
+          ]} 
+        />
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* Front gutter - running along width */}
+      {/* LEFT GUTTER - running along length */}
       <mesh
-        position={[0, gutterHeight - 0.2, length/2 + gutterOffset]}
-        rotation={[Math.PI/2, 0, Math.PI/2]}
+        position={[-width/2 - gutterOffset, gutterHeight, 0]}
+        rotation={[0, Math.PI/2, 0]}
         castShadow
         receiveShadow
       >
-        <primitive object={frontBackGutterGeometry} />
+        <extrudeGeometry 
+          args={[
+            gutterShape, 
+            {
+              steps: 2,
+              depth: length,
+              bevelEnabled: true,
+              bevelThickness: 0.03,
+              bevelSize: 0.03,
+              bevelSegments: 4,
+            }
+          ]} 
+        />
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* Back gutter - running along width */}
+      {/* RIGHT GUTTER - running along length */}
       <mesh
-        position={[0, gutterHeight - 0.2, -length/2 - gutterOffset]}
-        rotation={[Math.PI/2, 0, Math.PI/2]}
+        position={[width/2 + gutterOffset, gutterHeight, 0]}
+        rotation={[0, Math.PI/2, 0]}
         castShadow
         receiveShadow
       >
-        <primitive object={frontBackGutterGeometry} />
+        <extrudeGeometry 
+          args={[
+            gutterShape, 
+            {
+              steps: 2,
+              depth: length,
+              bevelEnabled: true,
+              bevelThickness: 0.03,
+              bevelSize: 0.03,
+              bevelSegments: 4,
+            }
+          ]} 
+        />
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* Gutter brackets for side gutters */}
-      {createBrackets('left')}
-      {createBrackets('right')}
-
-      {/* Corner downspouts - larger and more visible */}
+      {/* ONLY 4 CORNER DOWNSPOUTS - no front/back wall downspouts */}
       {[
+        // Front left corner
         [-width/2 - gutterOffset, (height - 1)/2 + 0.5, length/2 + gutterOffset],
+        // Front right corner  
         [width/2 + gutterOffset, (height - 1)/2 + 0.5, length/2 + gutterOffset],
+        // Back left corner
         [-width/2 - gutterOffset, (height - 1)/2 + 0.5, -length/2 - gutterOffset],
+        // Back right corner
         [width/2 + gutterOffset, (height - 1)/2 + 0.5, -length/2 - gutterOffset],
       ].map((position, index) => (
         <mesh
@@ -181,17 +166,17 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
           castShadow
           receiveShadow
         >
-          <primitive object={downspoutGeometry} />
+          <cylinderGeometry args={[0.15, 0.15, height - 1, 16]} />
           <primitive object={downspoutMaterial} attach="material" />
         </mesh>
       ))}
 
-      {/* Downspout elbows - more prominent */}
+      {/* Corner downspout elbows connecting gutters to downspouts */}
       {[
-        [-width/2 - gutterOffset, gutterHeight - 0.5, length/2 + gutterOffset],
-        [width/2 + gutterOffset, gutterHeight - 0.5, length/2 + gutterOffset],
-        [-width/2 - gutterOffset, gutterHeight - 0.5, -length/2 - gutterOffset],
-        [width/2 + gutterOffset, gutterHeight - 0.5, -length/2 - gutterOffset],
+        [-width/2 - gutterOffset, gutterHeight - 0.3, length/2 + gutterOffset],
+        [width/2 + gutterOffset, gutterHeight - 0.3, length/2 + gutterOffset],
+        [-width/2 - gutterOffset, gutterHeight - 0.3, -length/2 - gutterOffset],
+        [width/2 + gutterOffset, gutterHeight - 0.3, -length/2 - gutterOffset],
       ].map((position, index) => (
         <mesh
           key={`elbow-${index}`}
@@ -200,12 +185,92 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
           castShadow
           receiveShadow
         >
-          <torusGeometry args={[0.15, 0.12, 8, 16, Math.PI/2]} />
+          <torusGeometry args={[0.2, 0.15, 8, 16, Math.PI/2]} />
           <primitive object={downspoutMaterial} attach="material" />
         </mesh>
       ))}
 
-      {/* Downspout straps - more visible mounting hardware */}
+      {/* Gutter mounting brackets - more prominent */}
+      {(() => {
+        const brackets = [];
+        const bracketSpacing = 8;
+        
+        // Front gutter brackets
+        for (let i = 0; i <= Math.floor(width / bracketSpacing); i++) {
+          const x = -width/2 + i * bracketSpacing;
+          if (Math.abs(x) <= width/2) {
+            brackets.push(
+              <mesh 
+                key={`bracket-front-${i}`}
+                position={[x, gutterHeight + 0.2, length/2 + gutterOffset - 0.1]}
+                castShadow
+                receiveShadow
+              >
+                <boxGeometry args={[0.2, 0.5, 0.3]} />
+                <primitive object={gutterMaterial} attach="material" />
+              </mesh>
+            );
+          }
+        }
+        
+        // Back gutter brackets
+        for (let i = 0; i <= Math.floor(width / bracketSpacing); i++) {
+          const x = -width/2 + i * bracketSpacing;
+          if (Math.abs(x) <= width/2) {
+            brackets.push(
+              <mesh 
+                key={`bracket-back-${i}`}
+                position={[x, gutterHeight + 0.2, -length/2 - gutterOffset + 0.1]}
+                castShadow
+                receiveShadow
+              >
+                <boxGeometry args={[0.2, 0.5, 0.3]} />
+                <primitive object={gutterMaterial} attach="material" />
+              </mesh>
+            );
+          }
+        }
+        
+        // Left gutter brackets
+        for (let i = 0; i <= Math.floor(length / bracketSpacing); i++) {
+          const z = -length/2 + i * bracketSpacing;
+          if (Math.abs(z) <= length/2) {
+            brackets.push(
+              <mesh 
+                key={`bracket-left-${i}`}
+                position={[-width/2 - gutterOffset + 0.1, gutterHeight + 0.2, z]}
+                castShadow
+                receiveShadow
+              >
+                <boxGeometry args={[0.3, 0.5, 0.2]} />
+                <primitive object={gutterMaterial} attach="material" />
+              </mesh>
+            );
+          }
+        }
+        
+        // Right gutter brackets
+        for (let i = 0; i <= Math.floor(length / bracketSpacing); i++) {
+          const z = -length/2 + i * bracketSpacing;
+          if (Math.abs(z) <= length/2) {
+            brackets.push(
+              <mesh 
+                key={`bracket-right-${i}`}
+                position={[width/2 + gutterOffset - 0.1, gutterHeight + 0.2, z]}
+                castShadow
+                receiveShadow
+              >
+                <boxGeometry args={[0.3, 0.5, 0.2]} />
+                <primitive object={gutterMaterial} attach="material" />
+              </mesh>
+            );
+          }
+        }
+        
+        return brackets;
+      })()}
+
+      {/* Downspout mounting straps - only at corners */}
       {[
         [-width/2 - gutterOffset, height * 0.75, length/2 + gutterOffset],
         [width/2 + gutterOffset, height * 0.75, length/2 + gutterOffset],
@@ -222,17 +287,17 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
           castShadow
           receiveShadow
         >
-          <torusGeometry args={[0.15, 0.03, 8, 16]} />
+          <torusGeometry args={[0.18, 0.04, 8, 16]} />
           <primitive object={gutterMaterial} attach="material" />
         </mesh>
       ))}
 
-      {/* Enhanced splash blocks */}
+      {/* Splash blocks at ground level - only at corners */}
       {[
-        [-width/2 - gutterOffset, 0.15, length/2 + gutterOffset + 1.2],
-        [width/2 + gutterOffset, 0.15, length/2 + gutterOffset + 1.2],
-        [-width/2 - gutterOffset, 0.15, -length/2 - gutterOffset - 1.2],
-        [width/2 + gutterOffset, 0.15, -length/2 - gutterOffset - 1.2],
+        [-width/2 - gutterOffset, 0.15, length/2 + gutterOffset + 1.5],
+        [width/2 + gutterOffset, 0.15, length/2 + gutterOffset + 1.5],
+        [-width/2 - gutterOffset, 0.15, -length/2 - gutterOffset - 1.5],
+        [width/2 + gutterOffset, 0.15, -length/2 - gutterOffset - 1.5],
       ].map((position, index) => (
         <mesh
           key={`splash-${index}`}
@@ -240,30 +305,12 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
           castShadow
           receiveShadow
         >
-          <boxGeometry args={[2, 0.3, 1]} />
+          <boxGeometry args={[2.5, 0.3, 1.2]} />
           <meshStandardMaterial 
             color="#8B7355" 
             metalness={0.1} 
             roughness={0.9} 
           />
-        </mesh>
-      ))}
-
-      {/* Gutter end caps for better detail */}
-      {[
-        [-width/2 - gutterOffset, gutterHeight - 0.2, -length/2],
-        [-width/2 - gutterOffset, gutterHeight - 0.2, length/2],
-        [width/2 + gutterOffset, gutterHeight - 0.2, -length/2],
-        [width/2 + gutterOffset, gutterHeight - 0.2, length/2],
-      ].map((position, index) => (
-        <mesh
-          key={`endcap-${index}`}
-          position={position as [number, number, number]}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[0.6, 0.4, 0.15]} />
-          <primitive object={gutterMaterial} attach="material" />
         </mesh>
       ))}
     </group>
