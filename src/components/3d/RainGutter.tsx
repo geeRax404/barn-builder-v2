@@ -51,15 +51,14 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
     return shape;
   }, []);
 
-  // Position gutters at the exact roof edge - accounting for wall thickness
+  // Position gutters at the exact roof edge - NOT beyond the wall
   const gutterHeight = height - 0.2; // Slightly below roof edge
-  const wallThickness = 0.1; // Account for wall thickness
 
   return (
     <group>
-      {/* FRONT GUTTER - positioned at the EXACT front edge of the roof */}
+      {/* FRONT GUTTER - positioned AT the front edge of the roof (not beyond) */}
       <mesh
-        position={[0, gutterHeight, (length/2) + wallThickness]}
+        position={[0, gutterHeight, length/2]}
         rotation={[0, 0, 0]}
         castShadow
         receiveShadow
@@ -80,9 +79,9 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* BACK GUTTER - positioned at the EXACT back edge of the roof */}
+      {/* BACK GUTTER - positioned AT the back edge of the roof (not beyond) */}
       <mesh
-        position={[0, gutterHeight, -(length/2) - wallThickness]}
+        position={[0, gutterHeight, -length/2]}
         rotation={[0, 0, 0]}
         castShadow
         receiveShadow
@@ -106,13 +105,13 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
       {/* ONLY 4 CORNER DOWNSPOUTS - positioned at building corners */}
       {[
         // Front left corner
-        [-width/2, (height - 1)/2 + 0.5, (length/2) + wallThickness],
+        [-width/2, (height - 1)/2 + 0.5, length/2],
         // Front right corner  
-        [width/2, (height - 1)/2 + 0.5, (length/2) + wallThickness],
+        [width/2, (height - 1)/2 + 0.5, length/2],
         // Back left corner
-        [-width/2, (height - 1)/2 + 0.5, -(length/2) - wallThickness],
+        [-width/2, (height - 1)/2 + 0.5, -length/2],
         // Back right corner
-        [width/2, (height - 1)/2 + 0.5, -(length/2) - wallThickness],
+        [width/2, (height - 1)/2 + 0.5, -length/2],
       ].map((position, index) => (
         <mesh
           key={`downspout-${index}`}
@@ -127,10 +126,10 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
 
       {/* Corner downspout elbows connecting gutters to downspouts */}
       {[
-        [-width/2, gutterHeight - 0.3, (length/2) + wallThickness],
-        [width/2, gutterHeight - 0.3, (length/2) + wallThickness],
-        [-width/2, gutterHeight - 0.3, -(length/2) - wallThickness],
-        [width/2, gutterHeight - 0.3, -(length/2) - wallThickness],
+        [-width/2, gutterHeight - 0.3, length/2],
+        [width/2, gutterHeight - 0.3, length/2],
+        [-width/2, gutterHeight - 0.3, -length/2],
+        [width/2, gutterHeight - 0.3, -length/2],
       ].map((position, index) => (
         <mesh
           key={`elbow-${index}`}
@@ -144,19 +143,19 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         </mesh>
       ))}
 
-      {/* Gutter mounting brackets - ONLY on front and back walls */}
+      {/* Gutter mounting brackets - positioned on the wall faces */}
       {(() => {
         const brackets = [];
         const bracketSpacing = 8;
         
-        // Front gutter brackets - positioned on the wall face
+        // Front gutter brackets - positioned on the front wall face
         for (let i = 0; i <= Math.floor(width / bracketSpacing); i++) {
           const x = -width/2 + i * bracketSpacing;
           if (Math.abs(x) <= width/2) {
             brackets.push(
               <mesh 
                 key={`bracket-front-${i}`}
-                position={[x, gutterHeight + 0.2, length/2]}
+                position={[x, gutterHeight + 0.2, length/2 - 0.1]}
                 castShadow
                 receiveShadow
               >
@@ -167,14 +166,14 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
           }
         }
         
-        // Back gutter brackets - positioned on the wall face
+        // Back gutter brackets - positioned on the back wall face
         for (let i = 0; i <= Math.floor(width / bracketSpacing); i++) {
           const x = -width/2 + i * bracketSpacing;
           if (Math.abs(x) <= width/2) {
             brackets.push(
               <mesh 
                 key={`bracket-back-${i}`}
-                position={[x, gutterHeight + 0.2, -length/2]}
+                position={[x, gutterHeight + 0.2, -length/2 + 0.1]}
                 castShadow
                 receiveShadow
               >
@@ -190,14 +189,14 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
 
       {/* Downspout mounting straps - only at corners */}
       {[
-        [-width/2, height * 0.75, (length/2) + wallThickness],
-        [width/2, height * 0.75, (length/2) + wallThickness],
-        [-width/2, height * 0.75, -(length/2) - wallThickness],
-        [width/2, height * 0.75, -(length/2) - wallThickness],
-        [-width/2, height * 0.25, (length/2) + wallThickness],
-        [width/2, height * 0.25, (length/2) + wallThickness],
-        [-width/2, height * 0.25, -(length/2) - wallThickness],
-        [width/2, height * 0.25, -(length/2) - wallThickness],
+        [-width/2, height * 0.75, length/2],
+        [width/2, height * 0.75, length/2],
+        [-width/2, height * 0.75, -length/2],
+        [width/2, height * 0.75, -length/2],
+        [-width/2, height * 0.25, length/2],
+        [width/2, height * 0.25, length/2],
+        [-width/2, height * 0.25, -length/2],
+        [width/2, height * 0.25, -length/2],
       ].map((position, index) => (
         <mesh
           key={`strap-${index}`}
@@ -210,12 +209,12 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         </mesh>
       ))}
 
-      {/* Splash blocks at ground level - only at corners */}
+      {/* Splash blocks at ground level - positioned away from building */}
       {[
-        [-width/2, 0.15, (length/2) + wallThickness + 1.5],
-        [width/2, 0.15, (length/2) + wallThickness + 1.5],
-        [-width/2, 0.15, -(length/2) - wallThickness - 1.5],
-        [width/2, 0.15, -(length/2) - wallThickness - 1.5],
+        [-width/2, 0.15, length/2 + 1.5],
+        [width/2, 0.15, length/2 + 1.5],
+        [-width/2, 0.15, -length/2 - 1.5],
+        [width/2, 0.15, -length/2 - 1.5],
       ].map((position, index) => (
         <mesh
           key={`splash-${index}`}
