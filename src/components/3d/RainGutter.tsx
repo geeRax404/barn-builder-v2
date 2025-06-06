@@ -56,7 +56,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
 
   return (
     <group>
-      {/* FRONT GUTTER - positioned at the front edge of the roof */}
+      {/* FRONT GUTTER ONLY - positioned at the front edge of the roof */}
       <mesh
         position={[0, gutterHeight, length/2]}
         rotation={[0, 0, 0]}
@@ -79,7 +79,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* BACK GUTTER - positioned at the back edge of the roof */}
+      {/* BACK GUTTER ONLY - positioned at the back edge of the roof */}
       <mesh
         position={[0, gutterHeight, -length/2]}
         rotation={[0, 0, 0]}
@@ -92,52 +92,6 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
             {
               steps: 2,
               depth: width,
-              bevelEnabled: true,
-              bevelThickness: 0.03,
-              bevelSize: 0.03,
-              bevelSegments: 4,
-            }
-          ]} 
-        />
-        <primitive object={gutterMaterial} attach="material" />
-      </mesh>
-
-      {/* LEFT GUTTER - positioned at the left edge of the roof */}
-      <mesh
-        position={[-width/2, gutterHeight, 0]}
-        rotation={[0, Math.PI/2, 0]}
-        castShadow
-        receiveShadow
-      >
-        <extrudeGeometry 
-          args={[
-            gutterShape, 
-            {
-              steps: 2,
-              depth: length,
-              bevelEnabled: true,
-              bevelThickness: 0.03,
-              bevelSize: 0.03,
-              bevelSegments: 4,
-            }
-          ]} 
-        />
-        <primitive object={gutterMaterial} attach="material" />
-      </mesh>
-
-      {/* RIGHT GUTTER - positioned at the right edge of the roof */}
-      <mesh
-        position={[width/2, gutterHeight, 0]}
-        rotation={[0, Math.PI/2, 0]}
-        castShadow
-        receiveShadow
-      >
-        <extrudeGeometry 
-          args={[
-            gutterShape, 
-            {
-              steps: 2,
-              depth: length,
               bevelEnabled: true,
               bevelThickness: 0.03,
               bevelSize: 0.03,
@@ -189,7 +143,7 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
         </mesh>
       ))}
 
-      {/* Gutter mounting brackets - positioned on the building walls */}
+      {/* Gutter mounting brackets - ONLY on front and back walls */}
       {(() => {
         const brackets = [];
         const bracketSpacing = 8;
@@ -224,42 +178,6 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
                 receiveShadow
               >
                 <boxGeometry args={[0.2, 0.5, 0.3]} />
-                <primitive object={gutterMaterial} attach="material" />
-              </mesh>
-            );
-          }
-        }
-        
-        // Left gutter brackets
-        for (let i = 0; i <= Math.floor(length / bracketSpacing); i++) {
-          const z = -length/2 + i * bracketSpacing;
-          if (Math.abs(z) <= length/2) {
-            brackets.push(
-              <mesh 
-                key={`bracket-left-${i}`}
-                position={[-width/2 + 0.1, gutterHeight + 0.2, z]}
-                castShadow
-                receiveShadow
-              >
-                <boxGeometry args={[0.3, 0.5, 0.2]} />
-                <primitive object={gutterMaterial} attach="material" />
-              </mesh>
-            );
-          }
-        }
-        
-        // Right gutter brackets
-        for (let i = 0; i <= Math.floor(length / bracketSpacing); i++) {
-          const z = -length/2 + i * bracketSpacing;
-          if (Math.abs(z) <= length/2) {
-            brackets.push(
-              <mesh 
-                key={`bracket-right-${i}`}
-                position={[width/2 - 0.1, gutterHeight + 0.2, z]}
-                castShadow
-                receiveShadow
-              >
-                <boxGeometry args={[0.3, 0.5, 0.2]} />
                 <primitive object={gutterMaterial} attach="material" />
               </mesh>
             );
