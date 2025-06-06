@@ -9,7 +9,7 @@ import ColorsPanel from './sidebar/ColorsPanel';
 type PanelId = 'dimensions' | 'roof' | 'features' | 'colors';
 
 const Sidebar: React.FC = () => {
-  const [expandedPanel, setExpandedPanel] = useState<PanelId>('dimensions');
+  const [expandedPanel, setExpandedPanel] = useState<PanelId | null>('dimensions');
 
   const togglePanel = (panel: PanelId) => {
     setExpandedPanel(expandedPanel === panel ? null : panel);
