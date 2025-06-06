@@ -33,14 +33,14 @@ const Roof: React.FC<RoofProps> = ({ width, length, height, pitch, color, skylig
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, textureWidth, textureHeight);
         
-        // Create ribbed pattern with enhanced depth
+        // Create ribbed pattern with special handling for white
         const ribWidth = textureWidth / 24;
         const gradient = ctx.createLinearGradient(0, 0, ribWidth, 0);
         
-        // Enhanced gradient for better light interaction
-        const isLight = color === '#FFFFFF';
-        const shadowOpacity = isLight ? 0.25 : 0.2;
-        const highlightOpacity = isLight ? 0.15 : 0.2;
+        // Special handling for pure white to maintain brightness
+        const isWhite = color === '#FFFFFF';
+        const shadowOpacity = isWhite ? 0.08 : 0.25;
+        const highlightOpacity = isWhite ? 0.05 : 0.15;
         
         gradient.addColorStop(0, `rgba(255,255,255,${highlightOpacity})`);
         gradient.addColorStop(0.2, `rgba(255,255,255,${highlightOpacity * 0.5})`);
@@ -68,21 +68,29 @@ const Roof: React.FC<RoofProps> = ({ width, length, height, pitch, color, skylig
     const leftTexture = createRoofTexture('left');
     const rightTexture = createRoofTexture('right');
     
-    // Create separate materials with different properties for better light response
-    const leftMaterial = new THREE.MeshStandardMaterial({
-      map: leftTexture,
+    // Special material properties for white vs other colors
+    const isWhite = color === '#FFFFFF';
+    const materialProps = isWhite ? {
+      metalness: 0.3,
+      roughness: 0.6,
+      envMapIntensity: 0.8,
+    } : {
       metalness: 0.7,
       roughness: 0.3,
-      side: THREE.DoubleSide,
       envMapIntensity: 0.5,
+    };
+    
+    // Create separate materials with optimized properties for white
+    const leftMaterial = new THREE.MeshStandardMaterial({
+      map: leftTexture,
+      ...materialProps,
+      side: THREE.DoubleSide,
     });
 
     const rightMaterial = new THREE.MeshStandardMaterial({
       map: rightTexture,
-      metalness: 0.7,
-      roughness: 0.3,
+      ...materialProps,
       side: THREE.DoubleSide,
-      envMapIntensity: 0.5,
     });
     
     return { leftRoofMaterial: leftMaterial, rightRoofMaterial: rightMaterial };
@@ -149,7 +157,7 @@ const Roof: React.FC<RoofProps> = ({ width, length, height, pitch, color, skylig
         {skylights.filter(s => s.xOffset >= 0).map(s => createSkylight(s, false))}
       </group>
       
-      {/* Ridge cap for enhanced realism */}
+      {/* Ridge cap with special white handling */}
       <mesh 
         position={[0, roofHeight, 0]} 
         castShadow 
@@ -158,8 +166,9 @@ const Roof: React.FC<RoofProps> = ({ width, length, height, pitch, color, skylig
         <boxGeometry args={[0.4, 0.3, length]} />
         <meshStandardMaterial 
           color={color} 
-          metalness={0.8} 
-          roughness={0.2} 
+          metalness={color === '#FFFFFF' ? 0.2 : 0.8} 
+          roughness={color === '#FFFFFF' ? 0.7 : 0.2}
+          envMapIntensity={color === '#FFFFFF' ? 0.6 : 1.0}
         />
       </mesh>
     </group>

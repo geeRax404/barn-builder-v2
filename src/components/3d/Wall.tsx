@@ -21,7 +21,7 @@ const Wall: React.FC<WallProps> = ({
   rotation = [0, 0, 0],
   roofPitch = 0
 }) => {
-  // Create ribbed texture with enhanced lighting response
+  // Create ribbed texture with special handling for white
   const wallMaterial = useMemo(() => {
     const textureWidth = 512;
     const textureHeight = 512;
@@ -34,14 +34,14 @@ const Wall: React.FC<WallProps> = ({
       ctx.fillStyle = color;
       ctx.fillRect(0, 0, textureWidth, textureHeight);
       
-      // Create ribbed pattern with enhanced depth for better lighting
+      // Create ribbed pattern with special handling for pure white
       const ribWidth = textureWidth / 16;
       const gradient = ctx.createLinearGradient(0, 0, ribWidth, 0);
       
-      // Enhanced gradient for better light interaction
-      const isLight = color === '#FFFFFF' || color === '#E5E7EB';
-      const shadowOpacity = isLight ? 0.15 : 0.12;
-      const highlightOpacity = isLight ? 0.12 : 0.15;
+      // Special handling for pure white to maintain brightness
+      const isWhite = color === '#FFFFFF';
+      const shadowOpacity = isWhite ? 0.06 : 0.15;
+      const highlightOpacity = isWhite ? 0.04 : 0.12;
       
       gradient.addColorStop(0, `rgba(255,255,255,${highlightOpacity})`);
       gradient.addColorStop(0.3, `rgba(255,255,255,${highlightOpacity * 0.5})`);
@@ -61,13 +61,22 @@ const Wall: React.FC<WallProps> = ({
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(width/2, height/2);
     
-    return new THREE.MeshStandardMaterial({
-      map: texture,
+    // Special material properties for white vs other colors
+    const isWhite = color === '#FFFFFF';
+    const materialProps = isWhite ? {
+      metalness: 0.2,
+      roughness: 0.7,
+      envMapIntensity: 0.4,
+    } : {
       metalness: 0.6,
       roughness: 0.4,
-      side: THREE.DoubleSide,
-      // Enhanced material properties for better lighting response
       envMapIntensity: 0.3,
+    };
+    
+    return new THREE.MeshStandardMaterial({
+      map: texture,
+      ...materialProps,
+      side: THREE.DoubleSide,
     });
   }, [color, width, height]);
 
@@ -156,7 +165,7 @@ const Wall: React.FC<WallProps> = ({
     });
   }, [width, height, wallPosition, roofPitch]);
 
-  // Create steel beam with improved materials for better lighting
+  // Create steel beam with enhanced materials for better lighting
   const createSteelBeam = (x: number, beamHeight: number) => {
     const beamWidth = 0.3;
     const beamDepth = 0.2;
