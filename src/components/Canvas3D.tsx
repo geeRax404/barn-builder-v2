@@ -241,9 +241,7 @@ const Canvas3D: React.FC<Canvas3DProps> = ({ view }) => {
       
       {/* Hemisphere light for sky/ground color variation */}
       <hemisphereLight
-        skyColor="#ffffff"
-        groundColor="#f0f0f0"
-        intensity={0.6}
+        args={["#ffffff", "#f0f0f0", 0.6]}
       />
       
       {/* Fill light to reduce harsh shadows and brighten whites */}
