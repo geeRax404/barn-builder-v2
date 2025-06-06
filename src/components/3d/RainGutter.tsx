@@ -11,215 +11,247 @@ interface RainGutterProps {
 const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitch }) => {
   const roofHeight = (width / 2) * (roofPitch / 12);
   
-  // Enhanced gutter material for maximum visibility
+  // Gutter material
   const gutterMaterial = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: '#E8E8E8', // Brighter silver
-      metalness: 0.95,
-      roughness: 0.05,
-      envMapIntensity: 1.5,
+      color: '#A0A0A0',
+      metalness: 0.8,
+      roughness: 0.2,
+      envMapIntensity: 1.0,
     });
   }, []);
 
   // Downspout material
   const downspoutMaterial = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: '#D0D0D0',
-      metalness: 0.9,
-      roughness: 0.1,
-      envMapIntensity: 1.2,
+      color: '#909090',
+      metalness: 0.7,
+      roughness: 0.3,
+      envMapIntensity: 0.8,
     });
   }, []);
 
-  // Create highly visible gutter profile - much larger
+  // Create gutter profile shape
   const gutterShape = useMemo(() => {
     const shape = new THREE.Shape();
-    const gutterWidth = 1.0; // Much larger for visibility
-    const gutterDepth = 0.6; // Much deeper
+    const gutterWidth = 0.4;
+    const gutterDepth = 0.3;
     
-    // Create prominent U-shaped gutter profile
+    // Create U-shaped gutter profile
     shape.moveTo(-gutterWidth/2, 0);
     shape.lineTo(-gutterWidth/2, -gutterDepth * 0.8);
     shape.quadraticCurveTo(0, -gutterDepth, gutterWidth/2, -gutterDepth * 0.8);
     shape.lineTo(gutterWidth/2, 0);
-    shape.lineTo(gutterWidth/2 - 0.12, 0); // Thick walls
-    shape.lineTo(gutterWidth/2 - 0.12, -gutterDepth * 0.7);
-    shape.quadraticCurveTo(0, -gutterDepth * 0.85, -gutterWidth/2 + 0.12, -gutterDepth * 0.7);
-    shape.lineTo(-gutterWidth/2 + 0.12, 0);
+    shape.lineTo(gutterWidth/2 - 0.05, 0);
+    shape.lineTo(gutterWidth/2 - 0.05, -gutterDepth * 0.7);
+    shape.quadraticCurveTo(0, -gutterDepth * 0.85, -gutterWidth/2 + 0.05, -gutterDepth * 0.7);
+    shape.lineTo(-gutterWidth/2 + 0.05, 0);
     shape.closePath();
     
     return shape;
   }, []);
 
-  // Position gutters at the actual roof edge - accounting for wall thickness
-  const gutterHeight = height - 0.2; // Slightly below roof edge
-  const wallThickness = 0.2; // Wall thickness from Wall.tsx
-  
-  // Position gutters OUTSIDE the building at the roof overhang
-  const frontGutterZ = length/2 + wallThickness + 0.3; // Beyond front wall
-  const backGutterZ = -length/2 - wallThickness - 0.3; // Beyond back wall
+  // Create gutter geometry
+  const gutterGeometry = useMemo(() => {
+    const extrudeSettings = {
+      steps: 1,
+      depth: length,
+      bevelEnabled: false,
+    };
+    return new THREE.ExtrudeGeometry(gutterShape, extrudeSettings);
+  }, [gutterShape, length]);
+
+  // Create downspout geometry
+  const downspoutGeometry = useMemo(() => {
+    return new THREE.CylinderGeometry(0.08, 0.08, height - 1, 8);
+  }, [height]);
+
+  // Create gutter bracket geometry
+  const bracketGeometry = useMemo(() => {
+    return new THREE.BoxGeometry(0.1, 0.3, 0.15);
+  }, []);
+
+  // Calculate gutter positions
+  const gutterOffset = 0.25; // Distance from wall edge
+  const gutterHeight = height + 0.1; // Slightly below roof edge
+
+  // Create brackets along the gutter
+  const createBrackets = (side: 'left' | 'right') => {
+    const brackets = [];
+    const bracketSpacing = 8; // Every 8 feet
+    const numBrackets = Math.ceil(length / bracketSpacing);
+    const actualSpacing = length / (numBrackets - 1);
+    
+    for (let i = 0; i < numBrackets; i++) {
+      const z = -length/2 + i * actualSpacing;
+      const x = side === 'left' ? -width/2 - gutterOffset : width/2 + gutterOffset;
+      
+      brackets.push(
+        <mesh 
+          key={`bracket-${side}-${i}`}
+          position={[x, gutterHeight + 0.1, z]}
+          castShadow
+        >
+          <primitive object={bracketGeometry} />
+          <primitive object={gutterMaterial} attach="material" />
+        </mesh>
+      );
+    }
+    
+    return brackets;
+  };
+
+  // Create end caps for gutters
+  const createEndCap = (side: 'front' | 'back', gutterSide: 'left' | 'right') => {
+    const x = gutterSide === 'left' ? -width/2 - gutterOffset : width/2 + gutterOffset;
+    const z = side === 'front' ? length/2 : -length/2;
+    
+    return (
+      <mesh
+        key={`endcap-${side}-${gutterSide}`}
+        position={[x, gutterHeight - 0.15, z]}
+        rotation={[0, 0, 0]}
+        castShadow
+      >
+        <boxGeometry args={[0.4, 0.3, 0.1]} />
+        <primitive object={gutterMaterial} attach="material" />
+      </mesh>
+    );
+  };
+
+  // Create corner pieces where gutters meet
+  const createCornerPiece = (corner: 'front-left' | 'front-right' | 'back-left' | 'back-right') => {
+    const x = corner.includes('left') ? -width/2 - gutterOffset : width/2 + gutterOffset;
+    const z = corner.includes('front') ? length/2 : -length/2;
+    
+    return (
+      <mesh
+        key={`corner-${corner}`}
+        position={[x, gutterHeight - 0.15, z]}
+        castShadow
+      >
+        <boxGeometry args={[0.4, 0.3, 0.4]} />
+        <primitive object={gutterMaterial} attach="material" />
+      </mesh>
+    );
+  };
 
   return (
     <group>
-      {/* FRONT GUTTER - positioned BEYOND the front wall at roof overhang */}
+      {/* Left side gutter */}
       <mesh
-        position={[0, gutterHeight, frontGutterZ]}
-        rotation={[0, 0, 0]}
+        position={[-width/2 - gutterOffset, gutterHeight - 0.15, 0]}
+        rotation={[Math.PI/2, 0, 0]}
         castShadow
         receiveShadow
       >
-        <extrudeGeometry 
-          args={[
-            gutterShape, 
-            {
-              steps: 2,
-              depth: width,
-              bevelEnabled: true,
-              bevelThickness: 0.03,
-              bevelSize: 0.03,
-              bevelSegments: 4,
-            }
-          ]} 
-        />
+        <primitive object={gutterGeometry} />
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* BACK GUTTER - positioned BEYOND the back wall at roof overhang */}
+      {/* Right side gutter */}
       <mesh
-        position={[0, gutterHeight, backGutterZ]}
-        rotation={[0, 0, 0]}
+        position={[width/2 + gutterOffset, gutterHeight - 0.15, 0]}
+        rotation={[Math.PI/2, 0, 0]}
         castShadow
         receiveShadow
       >
-        <extrudeGeometry 
-          args={[
-            gutterShape, 
-            {
-              steps: 2,
-              depth: width,
-              bevelEnabled: true,
-              bevelThickness: 0.03,
-              bevelSize: 0.03,
-              bevelSegments: 4,
-            }
-          ]} 
-        />
+        <primitive object={gutterGeometry} />
         <primitive object={gutterMaterial} attach="material" />
       </mesh>
 
-      {/* ONLY 4 CORNER DOWNSPOUTS - positioned at building corners */}
-      {[
-        // Front left corner
-        [-width/2, (height - 1)/2 + 0.5, frontGutterZ],
-        // Front right corner  
-        [width/2, (height - 1)/2 + 0.5, frontGutterZ],
-        // Back left corner
-        [-width/2, (height - 1)/2 + 0.5, backGutterZ],
-        // Back right corner
-        [width/2, (height - 1)/2 + 0.5, backGutterZ],
-      ].map((position, index) => (
-        <mesh
-          key={`downspout-${index}`}
-          position={position as [number, number, number]}
-          castShadow
-          receiveShadow
-        >
-          <cylinderGeometry args={[0.15, 0.15, height - 1, 16]} />
-          <primitive object={downspoutMaterial} attach="material" />
-        </mesh>
-      ))}
+      {/* Gutter brackets */}
+      {createBrackets('left')}
+      {createBrackets('right')}
 
-      {/* Corner downspout elbows connecting gutters to downspouts */}
+      {/* Corner pieces */}
+      {createCornerPiece('front-left')}
+      {createCornerPiece('front-right')}
+      {createCornerPiece('back-left')}
+      {createCornerPiece('back-right')}
+
+      {/* Downspouts - positioned at corners */}
+      {/* Front left downspout */}
+      <mesh
+        position={[-width/2 - gutterOffset, (height - 1)/2 + 0.5, length/2]}
+        castShadow
+      >
+        <primitive object={downspoutGeometry} />
+        <primitive object={downspoutMaterial} attach="material" />
+      </mesh>
+
+      {/* Front right downspout */}
+      <mesh
+        position={[width/2 + gutterOffset, (height - 1)/2 + 0.5, length/2]}
+        castShadow
+      >
+        <primitive object={downspoutGeometry} />
+        <primitive object={downspoutMaterial} attach="material" />
+      </mesh>
+
+      {/* Back left downspout */}
+      <mesh
+        position={[-width/2 - gutterOffset, (height - 1)/2 + 0.5, -length/2]}
+        castShadow
+      >
+        <primitive object={downspoutGeometry} />
+        <primitive object={downspoutMaterial} attach="material" />
+      </mesh>
+
+      {/* Back right downspout */}
+      <mesh
+        position={[width/2 + gutterOffset, (height - 1)/2 + 0.5, -length/2]}
+        castShadow
+      >
+        <primitive object={downspoutGeometry} />
+        <primitive object={downspoutMaterial} attach="material" />
+      </mesh>
+
+      {/* Downspout elbows connecting gutter to downspout */}
       {[
-        [-width/2, gutterHeight - 0.3, frontGutterZ],
-        [width/2, gutterHeight - 0.3, frontGutterZ],
-        [-width/2, gutterHeight - 0.3, backGutterZ],
-        [width/2, gutterHeight - 0.3, backGutterZ],
+        [-width/2 - gutterOffset, gutterHeight - 0.4, length/2],
+        [width/2 + gutterOffset, gutterHeight - 0.4, length/2],
+        [-width/2 - gutterOffset, gutterHeight - 0.4, -length/2],
+        [width/2 + gutterOffset, gutterHeight - 0.4, -length/2],
       ].map((position, index) => (
         <mesh
           key={`elbow-${index}`}
           position={position as [number, number, number]}
           rotation={[Math.PI/2, 0, 0]}
           castShadow
-          receiveShadow
         >
-          <torusGeometry args={[0.2, 0.15, 8, 16, Math.PI/2]} />
+          <torusGeometry args={[0.1, 0.08, 8, 16, Math.PI/2]} />
           <primitive object={downspoutMaterial} attach="material" />
         </mesh>
       ))}
 
-      {/* Gutter mounting brackets - positioned on the wall faces */}
-      {(() => {
-        const brackets = [];
-        const bracketSpacing = 8;
-        
-        // Front gutter brackets - positioned on the front wall face
-        for (let i = 0; i <= Math.floor(width / bracketSpacing); i++) {
-          const x = -width/2 + i * bracketSpacing;
-          if (Math.abs(x) <= width/2) {
-            brackets.push(
-              <mesh 
-                key={`bracket-front-${i}`}
-                position={[x, gutterHeight + 0.2, length/2 + wallThickness/2]}
-                castShadow
-                receiveShadow
-              >
-                <boxGeometry args={[0.2, 0.5, 0.8]} />
-                <primitive object={gutterMaterial} attach="material" />
-              </mesh>
-            );
-          }
-        }
-        
-        // Back gutter brackets - positioned on the back wall face
-        for (let i = 0; i <= Math.floor(width / bracketSpacing); i++) {
-          const x = -width/2 + i * bracketSpacing;
-          if (Math.abs(x) <= width/2) {
-            brackets.push(
-              <mesh 
-                key={`bracket-back-${i}`}
-                position={[x, gutterHeight + 0.2, -length/2 - wallThickness/2]}
-                castShadow
-                receiveShadow
-              >
-                <boxGeometry args={[0.2, 0.5, 0.8]} />
-                <primitive object={gutterMaterial} attach="material" />
-              </mesh>
-            );
-          }
-        }
-        
-        return brackets;
-      })()}
-
-      {/* Downspout mounting straps - only at corners */}
+      {/* Downspout straps - mounting hardware */}
       {[
-        [-width/2, height * 0.75, frontGutterZ],
-        [width/2, height * 0.75, frontGutterZ],
-        [-width/2, height * 0.75, backGutterZ],
-        [width/2, height * 0.75, backGutterZ],
-        [-width/2, height * 0.25, frontGutterZ],
-        [width/2, height * 0.25, frontGutterZ],
-        [-width/2, height * 0.25, backGutterZ],
-        [width/2, height * 0.25, backGutterZ],
+        [-width/2 - gutterOffset, height * 0.75, length/2],
+        [width/2 + gutterOffset, height * 0.75, length/2],
+        [-width/2 - gutterOffset, height * 0.75, -length/2],
+        [width/2 + gutterOffset, height * 0.75, -length/2],
+        [-width/2 - gutterOffset, height * 0.25, length/2],
+        [width/2 + gutterOffset, height * 0.25, length/2],
+        [-width/2 - gutterOffset, height * 0.25, -length/2],
+        [width/2 + gutterOffset, height * 0.25, -length/2],
       ].map((position, index) => (
         <mesh
           key={`strap-${index}`}
           position={position as [number, number, number]}
           castShadow
-          receiveShadow
         >
-          <torusGeometry args={[0.18, 0.04, 8, 16]} />
+          <torusGeometry args={[0.12, 0.02, 8, 16]} />
           <primitive object={gutterMaterial} attach="material" />
         </mesh>
       ))}
 
-      {/* Splash blocks at ground level - positioned away from building */}
+      {/* Splash blocks at base of downspouts */}
       {[
-        [-width/2, 0.15, frontGutterZ + 1.0],
-        [width/2, 0.15, frontGutterZ + 1.0],
-        [-width/2, 0.15, backGutterZ - 1.0],
-        [width/2, 0.15, backGutterZ - 1.0],
+        [-width/2 - gutterOffset, 0.1, length/2 + 1],
+        [width/2 + gutterOffset, 0.1, length/2 + 1],
+        [-width/2 - gutterOffset, 0.1, -length/2 - 1],
+        [width/2 + gutterOffset, 0.1, -length/2 - 1],
       ].map((position, index) => (
         <mesh
           key={`splash-${index}`}
@@ -227,11 +259,11 @@ const RainGutter: React.FC<RainGutterProps> = ({ width, length, height, roofPitc
           castShadow
           receiveShadow
         >
-          <boxGeometry args={[2.5, 0.3, 1.2]} />
+          <boxGeometry args={[1.5, 0.2, 0.8]} />
           <meshStandardMaterial 
-            color="#8B7355" 
+            color="#6B7280" 
             metalness={0.1} 
-            roughness={0.9} 
+            roughness={0.8} 
           />
         </mesh>
       ))}
