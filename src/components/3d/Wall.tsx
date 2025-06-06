@@ -21,7 +21,7 @@ const Wall: React.FC<WallProps> = ({
   rotation = [0, 0, 0],
   roofPitch = 0
 }) => {
-  // Create ribbed texture
+  // Create ribbed texture with enhanced lighting response
   const wallMaterial = useMemo(() => {
     const textureWidth = 512;
     const textureHeight = 512;
@@ -34,15 +34,20 @@ const Wall: React.FC<WallProps> = ({
       ctx.fillStyle = color;
       ctx.fillRect(0, 0, textureWidth, textureHeight);
       
-      // Create ribbed pattern
-      const ribWidth = textureWidth / 16; // 16 ribs across
+      // Create ribbed pattern with enhanced depth for better lighting
+      const ribWidth = textureWidth / 16;
       const gradient = ctx.createLinearGradient(0, 0, ribWidth, 0);
       
-      // Gradient for 3D effect
-      gradient.addColorStop(0, 'rgba(255,255,255,0.1)');
-      gradient.addColorStop(0.4, 'rgba(0,0,0,0.1)');
-      gradient.addColorStop(0.6, 'rgba(0,0,0,0.1)');
-      gradient.addColorStop(1, 'rgba(255,255,255,0.1)');
+      // Enhanced gradient for better light interaction
+      const isLight = color === '#FFFFFF' || color === '#E5E7EB';
+      const shadowOpacity = isLight ? 0.15 : 0.12;
+      const highlightOpacity = isLight ? 0.12 : 0.15;
+      
+      gradient.addColorStop(0, `rgba(255,255,255,${highlightOpacity})`);
+      gradient.addColorStop(0.3, `rgba(255,255,255,${highlightOpacity * 0.5})`);
+      gradient.addColorStop(0.5, `rgba(0,0,0,${shadowOpacity})`);
+      gradient.addColorStop(0.7, `rgba(255,255,255,${highlightOpacity * 0.5})`);
+      gradient.addColorStop(1, `rgba(255,255,255,${highlightOpacity})`);
       
       ctx.fillStyle = gradient;
       
@@ -58,9 +63,11 @@ const Wall: React.FC<WallProps> = ({
     
     return new THREE.MeshStandardMaterial({
       map: texture,
-      metalness: 0.7,
-      roughness: 0.3,
-      side: THREE.DoubleSide
+      metalness: 0.6,
+      roughness: 0.4,
+      side: THREE.DoubleSide,
+      // Enhanced material properties for better lighting response
+      envMapIntensity: 0.3,
     });
   }, [color, width, height]);
 
@@ -149,7 +156,7 @@ const Wall: React.FC<WallProps> = ({
     });
   }, [width, height, wallPosition, roofPitch]);
 
-  // Create steel beam with improved visuals
+  // Create steel beam with improved materials for better lighting
   const createSteelBeam = (x: number, beamHeight: number) => {
     const beamWidth = 0.3;
     const beamDepth = 0.2;
@@ -159,11 +166,19 @@ const Wall: React.FC<WallProps> = ({
     
     const zOffset = wallPosition === 'front' || wallPosition === 'back' ? -0.1 : 0.1;
     
+    // Enhanced steel material for better lighting response
+    const steelMaterial = new THREE.MeshStandardMaterial({
+      color: "#808080",
+      metalness: 0.9,
+      roughness: 0.1,
+      envMapIntensity: 1.0,
+    });
+    
     return (
       <group position={[x, 0, zOffset]}>
         <mesh castShadow receiveShadow position={[0, 0, 0]}>
           <boxGeometry args={[beamWidth, beamHeight, beamDepth]} />
-          <meshStandardMaterial color="#808080" metalness={0.8} roughness={0.2} />
+          <primitive object={steelMaterial} attach="material" />
         </mesh>
         
         {Array.from({ length: Math.ceil(beamHeight / flangeSpacing) }).map((_, i) => {
@@ -171,7 +186,7 @@ const Wall: React.FC<WallProps> = ({
           return (
             <mesh key={i} castShadow receiveShadow position={[0, y, 0]}>
               <boxGeometry args={[flangeWidth, flangeHeight, beamDepth * 1.2]} />
-              <meshStandardMaterial color="#808080" metalness={0.8} roughness={0.2} />
+              <primitive object={steelMaterial} attach="material" />
             </mesh>
           );
         })}
@@ -179,7 +194,7 @@ const Wall: React.FC<WallProps> = ({
     );
   };
 
-  // Create horizontal support beams
+  // Create horizontal support beams with enhanced materials
   const createHorizontalBeams = () => {
     const heights = [0.25, 0.5, 0.75];
     const beamWidth = width - 1;
@@ -187,17 +202,24 @@ const Wall: React.FC<WallProps> = ({
     const beamDepth = 0.2;
     const zOffset = wallPosition === 'front' || wallPosition === 'back' ? -0.1 : 0.1;
     
+    const steelMaterial = new THREE.MeshStandardMaterial({
+      color: "#808080",
+      metalness: 0.9,
+      roughness: 0.1,
+      envMapIntensity: 1.0,
+    });
+    
     return heights.map((heightRatio, index) => (
       <group key={index} position={[0, -height/2 + height * heightRatio, zOffset]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[beamWidth, beamHeight, beamDepth]} />
-          <meshStandardMaterial color="#808080" metalness={0.8} roughness={0.2} />
+          <primitive object={steelMaterial} attach="material" />
         </mesh>
         
         {[-beamWidth/2, beamWidth/2].map((x, i) => (
           <mesh key={i} castShadow receiveShadow position={[x, 0, 0]}>
             <boxGeometry args={[beamHeight, beamHeight, beamDepth]} />
-            <meshStandardMaterial color="#808080" metalness={0.8} roughness={0.2} />
+            <primitive object={steelMaterial} attach="material" />
           </mesh>
         ))}
       </group>

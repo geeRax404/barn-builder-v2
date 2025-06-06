@@ -211,22 +211,59 @@ const Canvas3D: React.FC<Canvas3DProps> = ({ view }) => {
       camera={{ position: [60, 45, 60], fov: 50 }}
       gl={{ preserveDrawingBuffer: true }}
     >
-      <ambientLight intensity={0.5} />
+      {/* Enhanced lighting setup for midday simulation */}
+      
+      {/* Main sun light - positioned high and slightly south */}
       <directionalLight
-        position={[10, 10, 10]}
-        intensity={1}
+        position={[20, 50, 30]}
+        intensity={1.2}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
+        shadow-camera-far={200}
+        shadow-camera-left={-100}
+        shadow-camera-right={100}
+        shadow-camera-top={100}
+        shadow-camera-bottom={-100}
+        shadow-bias={-0.0001}
+        color="#ffffff"
       />
+      
+      {/* Secondary light from opposite direction for roof variation */}
+      <directionalLight
+        position={[-15, 40, -20]}
+        intensity={0.4}
+        color="#e6f3ff"
+      />
+      
+      {/* Ambient light for overall scene illumination */}
+      <ambientLight intensity={0.3} color="#f0f8ff" />
+      
+      {/* Hemisphere light for sky/ground color variation */}
+      <hemisphereLight
+        skyColor="#87CEEB"
+        groundColor="#8B7355"
+        intensity={0.4}
+      />
+      
+      {/* Fill light to reduce harsh shadows */}
+      <pointLight
+        position={[0, 30, 0]}
+        intensity={0.3}
+        color="#fff8dc"
+        distance={100}
+        decay={2}
+      />
+      
       <PerspectiveCamera makeDefault position={[60, 45, 60]} fov={50} />
       <CameraController view={view} />
       
+      {/* Ground plane with improved material */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
         <planeGeometry args={[200, 200]} />
         <meshStandardMaterial 
-          color="#E2E8F0"
-          roughness={0.9}
+          color="#E8E5D3"
+          roughness={0.8}
           metalness={0.1}
         />
       </mesh>
@@ -235,10 +272,10 @@ const Canvas3D: React.FC<Canvas3DProps> = ({ view }) => {
         args={[200, 200]} 
         cellSize={1}
         cellThickness={0.5}
-        cellColor="#94A3B8" 
+        cellColor="#B8B5A8" 
         sectionSize={10}
         sectionThickness={1}
-        sectionColor="#64748B"
+        sectionColor="#9A9688"
         fadeDistance={100}
         fadeStrength={1}
         infiniteGrid

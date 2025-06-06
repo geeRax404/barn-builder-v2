@@ -17,13 +17,14 @@ const Building: React.FC = () => {
   
   return (
     <group>
-      {/* Floor/Foundation */}
-      <mesh position={[0, 0.1, 0]} receiveShadow>
+      {/* Enhanced Foundation with better materials */}
+      <mesh position={[0, 0.1, 0]} receiveShadow castShadow>
         <boxGeometry args={[dimensions.width, 0.2, dimensions.length]} />
         <meshStandardMaterial 
-          color="#9ca3af" 
-          metalness={0.2}
-          roughness={0.8}
+          color="#8B7355" 
+          metalness={0.1}
+          roughness={0.9}
+          envMapIntensity={0.2}
         />
       </mesh>
       
