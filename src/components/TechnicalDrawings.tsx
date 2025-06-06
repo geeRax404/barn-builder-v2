@@ -36,8 +36,12 @@ const drawFloorPlan = (ctx: CanvasRenderingContext2D, dimensions: BuildingDimens
     ctx.stroke();
   }
   
-  // Draw walls with thickness
-  const wallThickness = 4; // Fixed wall thickness
+  // Draw walls with improved thickness and shadow
+  const wallThickness = 6; // Increased wall thickness
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
   ctx.fillStyle = '#1F2937';
   
   // Outer walls
@@ -46,10 +50,13 @@ const drawFloorPlan = (ctx: CanvasRenderingContext2D, dimensions: BuildingDimens
   ctx.fillRect(-width/2 - wallThickness, -length/2 - wallThickness, wallThickness, length + wallThickness * 2);
   ctx.fillRect(width/2, -length/2 - wallThickness, wallThickness, length + wallThickness * 2);
   
-  // Draw features
+  // Reset shadow for other elements
+  ctx.shadowColor = 'transparent';
+  
+  // Draw features with improved visibility
   features.forEach(feature => {
     const featureWidth = feature.width * scale;
-    const featureDepth = 6; // Fixed feature depth
+    const featureDepth = 8; // Increased feature depth
     let x = 0;
     let y = 0;
     
@@ -88,39 +95,110 @@ const drawFloorPlan = (ctx: CanvasRenderingContext2D, dimensions: BuildingDimens
         break;
     }
     
+    // Draw feature with shadow and highlight
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
     ctx.fillStyle = '#2563EB';
+    
     if (feature.position.wallPosition === 'front' || feature.position.wallPosition === 'back') {
       ctx.fillRect(x, y, featureWidth, featureDepth);
     } else {
       ctx.fillRect(x, y, featureDepth, featureWidth);
     }
+    
+    // Add feature label
+    ctx.shadowColor = 'transparent';
+    ctx.font = '8px Arial';
+    ctx.fillStyle = '#1F2937';
+    ctx.textAlign = 'center';
+    const label = `${feature.type} (${feature.width}'×${feature.height}')`;
+    
+    if (feature.position.wallPosition === 'front' || feature.position.wallPosition === 'back') {
+      ctx.fillText(label, x + featureWidth/2, y + featureDepth/2);
+    } else {
+      ctx.fillText(label, x + featureDepth/2, y + featureWidth/2);
+    }
   });
   
-  // Draw dimensions
+  // Draw dimensions with improved visibility
   ctx.strokeStyle = '#000000';
   ctx.fillStyle = '#000000';
   ctx.lineWidth = 1;
   ctx.font = '12px Arial';
   ctx.textAlign = 'center';
   
-  // Width dimension
+  // Width dimension with improved arrows
   const widthY = length/2 + 20;
   ctx.beginPath();
   ctx.moveTo(-width/2, widthY);
   ctx.lineTo(width/2, widthY);
   ctx.stroke();
-  ctx.fillText(`${dimensions.width}'`, 0, widthY + 15);
   
-  // Length dimension
+  // Arrow heads
+  const arrowSize = 6;
+  ctx.beginPath();
+  ctx.moveTo(-width/2 - arrowSize, widthY - arrowSize);
+  ctx.lineTo(-width/2, widthY);
+  ctx.lineTo(-width/2 - arrowSize, widthY + arrowSize);
+  ctx.moveTo(width/2 + arrowSize, widthY - arrowSize);
+  ctx.lineTo(width/2, widthY);
+  ctx.lineTo(width/2 + arrowSize, widthY + arrowSize);
+  ctx.stroke();
+  
+  // Dimension text with background
+  const widthText = `${dimensions.width}'`;
+  const textMetrics = ctx.measureText(widthText);
+  const padding = 4;
+  
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(
+    -textMetrics.width/2 - padding,
+    widthY + 5,
+    textMetrics.width + padding * 2,
+    16
+  );
+  
+  ctx.fillStyle = '#000000';
+  ctx.fillText(widthText, 0, widthY + 15);
+  
+  // Length dimension with improved arrows
   const lengthX = width/2 + 20;
   ctx.save();
   ctx.translate(lengthX, 0);
   ctx.rotate(Math.PI/2);
+  
   ctx.beginPath();
   ctx.moveTo(-length/2, 0);
   ctx.lineTo(length/2, 0);
   ctx.stroke();
-  ctx.fillText(`${dimensions.length}'`, 0, 15);
+  
+  // Arrow heads
+  ctx.beginPath();
+  ctx.moveTo(-length/2 - arrowSize, -arrowSize);
+  ctx.lineTo(-length/2, 0);
+  ctx.lineTo(-length/2 - arrowSize, arrowSize);
+  ctx.moveTo(length/2 + arrowSize, -arrowSize);
+  ctx.lineTo(length/2, 0);
+  ctx.lineTo(length/2 + arrowSize, arrowSize);
+  ctx.stroke();
+  
+  // Dimension text with background
+  const lengthText = `${dimensions.length}'`;
+  const lengthMetrics = ctx.measureText(lengthText);
+  
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(
+    -lengthMetrics.width/2 - padding,
+    5,
+    lengthMetrics.width + padding * 2,
+    16
+  );
+  
+  ctx.fillStyle = '#000000';
+  ctx.fillText(lengthText, 0, 15);
+  
   ctx.restore();
 };
 
@@ -137,7 +215,7 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(-CANVAS_WIDTH/2, -CANVAS_HEIGHT/2, CANVAS_WIDTH, CANVAS_HEIGHT);
   
-  // Draw grid
+  // Draw grid with improved visibility
   ctx.strokeStyle = '#E5E7EB';
   ctx.lineWidth = 0.5;
   const gridSpacing = 20;
@@ -156,7 +234,11 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
     ctx.stroke();
   }
   
-  // Draw walls and roof
+  // Draw walls and roof with shadow
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
   ctx.strokeStyle = '#1F2937';
   ctx.fillStyle = '#F3F4F6';
   ctx.lineWidth = 2;
@@ -172,7 +254,10 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
   ctx.fill();
   ctx.stroke();
   
-  // Draw features
+  // Reset shadow for features
+  ctx.shadowColor = 'transparent';
+  
+  // Draw features with improved visibility
   features.filter(f => f.position.wallPosition === 'front').forEach(feature => {
     const featureWidth = feature.width * scale;
     const featureHeight = feature.height * scale;
@@ -183,11 +268,69 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
         : -featureWidth/2 + (feature.position.xOffset * scale);
     let y = -(feature.position.yOffset * scale + featureHeight);
     
+    // Draw feature with shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
     ctx.fillStyle = '#2563EB';
     ctx.fillRect(x, y, featureWidth, featureHeight);
+    
+    // Add feature label
+    ctx.shadowColor = 'transparent';
+    ctx.font = '8px Arial';
+    ctx.fillStyle = '#1F2937';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      `${feature.type} (${feature.width}'×${feature.height}')`,
+      x + featureWidth/2,
+      y + featureHeight/2
+    );
   });
   
-  // Draw dimensions
+  // Draw dimensions with improved visibility
+  const drawDimensionLine = (
+    start: [number, number],
+    end: [number, number],
+    text: string,
+    offset: number = 10
+  ) => {
+    const arrowSize = 6;
+    
+    // Draw dimension line
+    ctx.beginPath();
+    ctx.moveTo(...start);
+    ctx.lineTo(...end);
+    ctx.stroke();
+    
+    // Draw arrow heads
+    ctx.beginPath();
+    ctx.moveTo(start[0] - arrowSize, start[1] - arrowSize);
+    ctx.lineTo(start[0], start[1]);
+    ctx.lineTo(start[0] - arrowSize, start[1] + arrowSize);
+    ctx.moveTo(end[0] + arrowSize, end[1] - arrowSize);
+    ctx.lineTo(end[0], end[1]);
+    ctx.lineTo(end[0] + arrowSize, end[1] + arrowSize);
+    ctx.stroke();
+    
+    // Draw text with background
+    const textMetrics = ctx.measureText(text);
+    const padding = 4;
+    const textX = (start[0] + end[0]) / 2;
+    const textY = start[1] + offset;
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(
+      textX - textMetrics.width/2 - padding,
+      textY - 8,
+      textMetrics.width + padding * 2,
+      16
+    );
+    
+    ctx.fillStyle = '#000000';
+    ctx.fillText(text, textX, textY);
+  };
+  
   ctx.strokeStyle = '#000000';
   ctx.fillStyle = '#000000';
   ctx.lineWidth = 1;
@@ -195,32 +338,48 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
   ctx.textAlign = 'center';
   
   // Width dimension
-  const widthY = 20;
-  ctx.beginPath();
-  ctx.moveTo(-width/2, widthY);
-  ctx.lineTo(width/2, widthY);
-  ctx.stroke();
-  ctx.fillText(`${dimensions.width}'`, 0, widthY + 15);
+  drawDimensionLine(
+    [-width/2, 20],
+    [width/2, 20],
+    `${dimensions.width}'`
+  );
   
   // Height dimension
-  const heightX = width/2 + 20;
-  ctx.beginPath();
-  ctx.moveTo(heightX, 0);
-  ctx.lineTo(heightX, -height);
-  ctx.stroke();
-  ctx.fillText(`${dimensions.height}'`, heightX + 15, -height/2);
+  drawDimensionLine(
+    [width/2 + 20, 0],
+    [width/2 + 20, -height],
+    `${dimensions.height}'`,
+    15
+  );
   
   // Total height dimension
-  const totalHeightX = width/2 + 40;
-  ctx.beginPath();
-  ctx.moveTo(totalHeightX, 0);
-  ctx.lineTo(totalHeightX, -(height + roofHeight));
-  ctx.stroke();
-  ctx.fillText(`${(dimensions.height + (dimensions.width/2) * (dimensions.roofPitch/12)).toFixed(1)}'`, 
-    totalHeightX + 15, -(height + roofHeight)/2);
+  drawDimensionLine(
+    [width/2 + 40, 0],
+    [width/2 + 40, -(height + roofHeight)],
+    `${(dimensions.height + (dimensions.width/2) * (dimensions.roofPitch/12)).toFixed(1)}'`,
+    15
+  );
   
-  // Roof pitch
-  ctx.fillText(`${dimensions.roofPitch}:12 pitch`, 0, -(height + roofHeight/2));
+  // Roof pitch label with improved visibility
+  ctx.font = 'bold 12px Arial';
+  ctx.fillStyle = '#1F2937';
+  const pitchText = `${dimensions.roofPitch}:12 pitch`;
+  const pitchMetrics = ctx.measureText(pitchText);
+  
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(
+    -pitchMetrics.width/2 - padding,
+    -(height + roofHeight/2) - 8,
+    pitchMetrics.width + padding * 2,
+    16
+  );
+  
+  ctx.fillStyle = '#1F2937';
+  ctx.fillText(
+    pitchText,
+    0,
+    -(height + roofHeight/2)
+  );
 };
 
 const drawSideElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingDimensions, features: WallFeature[]) => {

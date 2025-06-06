@@ -19,7 +19,7 @@ const Roof: React.FC<RoofProps> = ({ width, length, height, pitch, color, skylig
   const pitchAngle = Math.atan2(roofHeight, width / 2);
   const panelLength = Math.sqrt(Math.pow(width/2, 2) + Math.pow(roofHeight, 2));
 
-  // Create ribbed texture for roof
+  // Create ribbed texture for both roof panels
   const roofMaterial = useMemo(() => {
     const textureWidth = 512;
     const textureHeight = 512;
