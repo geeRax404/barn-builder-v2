@@ -296,6 +296,7 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
     offset: number = 10
   ) => {
     const arrowSize = 6;
+    const padding = 4; // Define padding here within the function scope
     
     // Draw dimension line
     ctx.beginPath();
@@ -315,7 +316,6 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
     
     // Draw text with background
     const textMetrics = ctx.measureText(text);
-    const padding = 4;
     const textX = (start[0] + end[0]) / 2;
     const textY = start[1] + offset;
     
@@ -365,6 +365,7 @@ const drawFrontElevation = (ctx: CanvasRenderingContext2D, dimensions: BuildingD
   ctx.fillStyle = '#1F2937';
   const pitchText = `${dimensions.roofPitch}:12 pitch`;
   const pitchMetrics = ctx.measureText(pitchText);
+  const padding = 4; // Define padding here for the roof pitch label
   
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(
